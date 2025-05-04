@@ -1,0 +1,31 @@
+# --- {{ vendor.name }} - Port Block mapping --- #
+{% if vendor.regex_map.port_block_mapping is iterable and vendor.regex_map.port_block_mapping is not string %}
+    {% for pattern in vendor.regex_map.port_block_mapping %}
+        {% if pattern != '' %}
+filter f_{{ vendor.name }}_port_block_mapping_{{ loop.index0 }} {
+    match('{{ pattern }}' value("MESSAGE"));
+};
+
+log {
+    source(s_net);
+    filter(f_{{ vendor.name }}_port_block_mapping_{{ loop.index0 }});
+    rewrite(r_cgn_eventv1);
+    destination(d_kafka_{{ vendor.name }});
+};
+        {% endif %}
+    {% endfor %}
+    {% else %}
+        {% if vendor.regex_map.port_block_mapping != '' %}
+filter f_{{ vendor.name }}_port_block_mapping {
+    match('{{ vendor.regex_map.port_block_mapping }}' value("MESSAGE"));
+};
+
+log {
+    source(s_net);
+    filter(f_{{ vendor.name }}_port_block_mapping);
+    rewrite(r_cgn_eventv1);
+    destination(d_kafka_{{ vendor.name }});
+};
+        {% endif %}
+    {% endif %}
+# --- {{ vendor.name }} - Port Block mapping --- #

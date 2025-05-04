@@ -1,0 +1,76 @@
+@version: 4.7
+
+options {
+    use_dns(no);
+    use_fqdn (no);
+    keep_hostname(yes);
+    create_dirs(yes);
+    ts_format(iso);
+    frac_digits(3); # Enable milliseconds
+    time_reopen (10);
+    chain_hostnames (no);
+};
+
+source s_net {
+    udp(
+     ip({{ config.HOST }})
+     port({{ config.PORT }})
+    );
+};
+
+rewrite r_cgn_eventv1 {
+    set("${HOST}" value(".eventv1.host"));
+    set("1" value(".eventv1.version"));
+    set("${ISODATE}" value(".eventv1.timestamp") condition("${.eventv1.timestamp}" eq ""));
+    set("${MESSAGE}" value(".eventv1.message") condition("${.eventv1.message}" eq ""));
+    set("${MSG}" value(".eventv1.message") condition("${.eventv1.message}" eq ""));
+    set("${SOURCEIP}" value(".eventv1.ip") condition("${.eventv1.ip}" eq ""));
+    set("generic" value(".eventv1.type") condition("${.eventv1.type}" eq ""));
+};
+
+{% for vendor in vendors %}
+# -- {{ vendor.name }} Start --
+destination d_kafka_{{ vendor.name }} {
+    channel {
+        rewrite {
+            set("${HOST}"    value(".eventv1.host"));
+            set("1"          value(".eventv1.version"));
+            set("${ISODATE}" value(".eventv1.timestamp") condition("${.eventv1.timestamp}" eq ""));
+            set("${MESSAGE}" value(".eventv1.message")    condition("${.eventv1.message}" eq ""));
+            set("${MSG}"     value(".eventv1.message")    condition("${.eventv1.message}" eq ""));
+            set("${SOURCEIP}"     value(".eventv1.ip")    condition("${.eventv1.ip}" eq ""));
+            set("generic"    value(".eventv1.type")       condition("${.eventv1.type}" eq ""));
+        };
+
+        destination {
+            kafka-c(config(queue.buffering.max.ms("{{ config.KAFKA_QUEUE_BUFFER_MS }}"))
+                topic("cgnat.syslog.{{ vendor.name }}")
+                bootstrap-servers("{{ config.KAFKA_BOOTSTRAP_SERVER }}")
+                message("$(format-json --key .eventv1.* --rekey .eventv1.* --shift 9)")
+            );
+        };
+    };
+};
+
+{% if vendor.regex_map.default_pattern %}
+{% include "default_mapping.j2" %}
+{% endif %}
+
+{% if vendor.regex_map.session_mapping %}
+{% include "session_mapping.j2" %}
+{% endif %}
+
+{% if vendor.regex_map.address_mapping %}
+{% include "address_mapping.j2" %}
+{% endif %}
+
+{% if vendor.regex_map.port_mapping %}
+{% include "port_mapping.j2" %}
+{% endif %}
+
+{% if vendor.regex_map.port_block_mapping %}
+{% include "port_block_mapping.j2" %}
+{% endif %}
+
+# -- {{ vendor.name }} End --
+{% endfor %}

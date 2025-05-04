@@ -1,0 +1,5 @@
+services:
+  cgn_ec_producer_syslog:
+    build: .
+    ports:
+      - 1516:1514/udp

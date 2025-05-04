@@ -1,0 +1,16 @@
+# --- {{ vendor.name }} - Default mapping --- #
+
+{% if vendor.regex_map.default_pattern != '' %}
+filter f_{{ vendor.name }}_default_mapping {
+    match('{{ vendor.regex_map.default_pattern }}' value("MESSAGE"));
+};
+
+log {
+    source(s_net);
+    filter(f_{{ vendor.name }}_default_mapping);
+    rewrite(r_cgn_eventv1);
+    destination(d_kafka_{{ vendor.name }});
+};
+{% endif %}
+
+# --- {{ vendor.name }} - Default mapping --- #

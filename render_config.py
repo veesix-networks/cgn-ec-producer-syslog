@@ -25,7 +25,7 @@ class Settings(BaseSettings):
         default="/etc/cgn_ec/syslog.yaml", description="Syslog configuration file"
     )
     KAFKA_QUEUE_BUFFER_MS: int = 500
-    KAFKA_BOOTSTRAP_SERVER: str = "10.4.21.133:9094"
+    KAFKA_BOOTSTRAP_SERVER: str = "kafka:9092"
 
     class Config:
         env_file = ".env"

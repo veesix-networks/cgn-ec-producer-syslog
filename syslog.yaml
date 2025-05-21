@@ -3,6 +3,10 @@ vendors:
     enabled: true
     regex_map:
       default_pattern: 'NAT-(UDP|TCP|ICMP)-\w+:.*$'
+  - name: a10_thunder_cef
+    enabled: true
+    regex_map:
+      default_pattern: 'CEF:\d+\|A10.*$'
   - name: nfware
     enabled: true
     regex_map:

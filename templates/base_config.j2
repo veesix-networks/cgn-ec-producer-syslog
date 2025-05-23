@@ -28,6 +28,14 @@ rewrite r_cgn_eventv1 {
     set("generic" value(".eventv1.type") condition("${.eventv1.type}" eq ""));
 };
 
+destination d_debug_file {
+    file("/var/log/syslog-ng-debug.log");
+};
+
+destination d_stdout {
+    stdout();
+};
+
 {% for vendor in vendors %}
 # -- {{ vendor.name }} Start --
 destination d_kafka_{{ vendor.name }} {
@@ -35,6 +43,7 @@ destination d_kafka_{{ vendor.name }} {
         rewrite {
             set("${HOST}"    value(".eventv1.host"));
             set("1"          value(".eventv1.version"));
+            set("${PROGRAM}" value(".eventv1.program") condition("${.eventv1.program}" eq ""));
             set("${ISODATE}" value(".eventv1.timestamp") condition("${.eventv1.timestamp}" eq ""));
             set("${MESSAGE}" value(".eventv1.message")    condition("${.eventv1.message}" eq ""));
             set("${MSG}"     value(".eventv1.message")    condition("${.eventv1.message}" eq ""));

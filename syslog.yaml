@@ -6,7 +6,7 @@ vendors:
   - name: a10_thunder_cef
     enabled: true
     regex_map:
-      default_pattern: 'CEF:\d+\|A10.*$'
+      default_pattern: '\|A10\|ADC\|.*$'
   - name: nfware
     enabled: true
     regex_map:
